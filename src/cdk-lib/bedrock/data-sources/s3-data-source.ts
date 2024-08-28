@@ -1,11 +1,24 @@
-import * as s3 from 'aws-cdk-lib/aws-s3';
-import { DataDeletionPolicy, DataSourceAssociationProps, DataSourceNew, DataSourceType } from './base-data-source';
-import { CfnDataSource } from 'aws-cdk-lib/aws-bedrock';
-import { KnowledgeBase } from '@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock';
+/**
+ *  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
+ *  with the License. A copy of the License is located at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES
+ *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions
+ *  and limitations under the License.
+ */
 import { Construct } from 'constructs';
+import { CfnDataSource } from 'aws-cdk-lib/aws-bedrock';
+import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { IKey } from 'aws-cdk-lib/aws-kms';
 import { NagSuppressions } from 'cdk-nag';
-import { generatePhysicalNameV2 } from '@cdklabs/generative-ai-cdk-constructs/lib/common/helpers/utils';
+
+import { KnowledgeBase } from './../knowledge-base';
+import { generatePhysicalNameV2 } from '../../../common/helpers/utils';
+import { DataDeletionPolicy, DataSourceAssociationProps, DataSourceNew, DataSourceType } from './base-data-source';
 
 
 /**
@@ -15,7 +28,7 @@ export interface S3DataSourceAssociationProps extends DataSourceAssociationProps
   /**
    * The bucket that contains the data source.
    */
-  readonly bucket: s3.IBucket;
+  readonly bucket: IBucket;
 
   /**
    * The prefixes of the objects in the bucket that should be included in the data source.
@@ -27,7 +40,7 @@ export interface S3DataSourceAssociationProps extends DataSourceAssociationProps
 }
 
 /**
- * Interface to create a new S3DataSource object
+ * Interface to create a new S3 Data Source object.
  */
 export interface S3DataSourceProps extends S3DataSourceAssociationProps {
   /**
@@ -38,7 +51,7 @@ export interface S3DataSourceProps extends S3DataSourceAssociationProps {
 
 
 /**
- * Sets up an data source to be added to a knowledge base.
+ * Sets up an S3 Data Source to be added to a knowledge base.
  */
 export class S3DataSource extends DataSourceNew {
   /**
@@ -53,11 +66,6 @@ export class S3DataSource extends DataSourceNew {
   /**
    * The name of the data source.
    */
-  public readonly name: string;
-  /**
-   * The name of the data source.
-   * @deprecated Use `name` instead.
-   */
   public readonly dataSourceName: string;
   /**
    * The knowledge base associated with the data source.
@@ -66,7 +74,7 @@ export class S3DataSource extends DataSourceNew {
   /**
    * The bucket associated with the data source.
    */
-  public readonly bucket: s3.IBucket;
+  public readonly bucket: IBucket;
   /**
    * The KMS key to use to encrypt the data source.
    */
@@ -83,8 +91,7 @@ export class S3DataSource extends DataSourceNew {
     // Assign attributes
     this.knowledgeBase = props.knowledgeBase;
     this.dataSourceType = DataSourceType.S3;
-    this.name = props.name ?? generatePhysicalNameV2(this, 's3-datasource', { maxLength: 40, lower: true, separator: '-' });;
-    this.dataSourceName = this.name;
+    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 's3-datasource', { maxLength: 40, lower: true, separator: '-' });;
     this.bucket = props.bucket;
     this.kmsKey = props.kmsKey;
 
@@ -101,7 +108,7 @@ export class S3DataSource extends DataSourceNew {
     // L1 instantiation
     this.__resource = new CfnDataSource(this, 'DataSource', {
       knowledgeBaseId: this.knowledgeBase.knowledgeBaseId,
-      name: this.name,
+      name: this.dataSourceName,
       dataDeletionPolicy: props.dataDeletionPolicy ?? DataDeletionPolicy.DELETE,
       dataSourceConfiguration: {
         type: this.dataSourceType,
@@ -110,7 +117,11 @@ export class S3DataSource extends DataSourceNew {
           inclusionPrefixes: props.inclusionPrefixes,
         },
       },
-      vectorIngestionConfiguration: props.vectorIngestionConfigurationProperty,
+      vectorIngestionConfiguration: {
+        chunkingConfiguration: props.chunkingStrategy?.configuration,
+        parsingConfiguration: props.parsingStrategy?.configuration,
+        customTransformationConfiguration: props.customTransformation?.configuration
+      },
       serverSideEncryptionConfiguration: this.kmsKey ? {
         kmsKeyArn: this.kmsKey.keyArn,
       } : undefined,

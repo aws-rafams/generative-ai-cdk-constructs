@@ -1,8 +1,26 @@
-import { KnowledgeBase } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
-import { aws_bedrock, IResource, Resource } from "aws-cdk-lib";
+/**
+ *  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
+ *  with the License. A copy of the License is located at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES
+ *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions
+ *  and limitations under the License.
+ */
 
-import * as kms from 'aws-cdk-lib/aws-kms';
 import { Construct } from "constructs";
+import { IResource, Resource } from "aws-cdk-lib";
+import * as aws_bedrock from 'aws-cdk-lib/aws-bedrock';
+import * as kms from 'aws-cdk-lib/aws-kms';
+
+import { KnowledgeBase } from './../knowledge-base';
+import { ChunkingStrategy } from "./chunking";
+import { ParsingStategy } from "./parsing";
+import { CustomTransformation } from "./custom-transformation";
+
 
 export enum DataDeletionPolicy {
   /**
@@ -74,7 +92,7 @@ export interface DataSourceAssociationProps {
    * 
    * @default - A new name will be generated.
    */
-  readonly name?: string;
+  readonly dataSourceName?: string;
   /**
    * A description of the data source.
    *
@@ -94,12 +112,25 @@ export interface DataSourceAssociationProps {
    */
   readonly dataDeletionPolicy?: DataDeletionPolicy;
   /**
-   * The vector ingestion configuration for the data source.
-   * // TODO Refactor with L2 strategies
-   *
-   * @default - No vector ingestion configuration is provided.
+   * The chunking stategy to use for splitting your documents or content.
+   * The chunks are then converted to embeddings and written to the vector 
+   * index allowing for similarity search and retrieval of the content.
+   * 
+   * @default ChunkingStrategy.DEFAULT
    */
-  readonly vectorIngestionConfigurationProperty?: aws_bedrock.CfnDataSource.VectorIngestionConfigurationProperty;
+  readonly chunkingStrategy?: ChunkingStrategy;
+  /**
+   * The parsing strategy to use.
+   * 
+   * @default - No Parsing Stategy is used.
+   */
+  readonly parsingStrategy?: ParsingStategy;
+  /**
+   * The custom transformation strategy to use.
+   * 
+   * @default - No custom transformation is used.
+   */
+  readonly customTransformation?: CustomTransformation;
 }
 
 
@@ -121,7 +152,7 @@ export abstract class DataSourceNew extends DataSourceBase {
   /**
    * The name of the data source.
    */
-  public abstract readonly name: string;
+  public abstract readonly dataSourceName: string;
   /**
    * The knowledge base associated with the data source.
    */

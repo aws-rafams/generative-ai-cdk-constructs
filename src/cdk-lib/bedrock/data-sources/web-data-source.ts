@@ -1,9 +1,22 @@
-import { KnowledgeBase } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
-import { DataDeletionPolicy, DataSourceNew, DataSourceAssociationProps, DataSourceType } from "./base-data-source";
+/**
+ *  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
+ *  with the License. A copy of the License is located at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES
+ *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions
+ *  and limitations under the License.
+ */
+import { Construct } from "constructs";
 import { IKey } from "aws-cdk-lib/aws-kms";
 import { CfnDataSource } from "aws-cdk-lib/aws-bedrock";
-import { Construct } from "constructs";
-import { generatePhysicalNameV2 } from "@cdklabs/generative-ai-cdk-constructs/lib/common/helpers/utils";
+
+import { DataDeletionPolicy, DataSourceNew, DataSourceAssociationProps, DataSourceType } from "./base-data-source";
+import { KnowledgeBase } from './../knowledge-base';
+import { generatePhysicalNameV2 } from '../../../common/helpers/utils';
 
 export enum CrawlingScope {
   /**
@@ -88,11 +101,6 @@ export class WebCrawlerDataSource extends DataSourceNew {
   /**
    * The name of the data source.
    */
-  public readonly name: string;
-  /**
-   * The name of the data source.
-   * @deprecated Use `name` instead.
-   */
   public readonly dataSourceName: string;
   /**
    * The knowledge base associated with the data source.
@@ -116,15 +124,14 @@ export class WebCrawlerDataSource extends DataSourceNew {
     // Assign attributes
     this.knowledgeBase = props.knowledgeBase;
     this.dataSourceType = DataSourceType.WEB_CRAWLER;
-    this.name = props.name ?? generatePhysicalNameV2(this, 'crawler-datasource', { maxLength: 40, lower: true, separator: '-' });;
-    this.dataSourceName = this.name;
+    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 'crawler-datasource', { maxLength: 40, lower: true, separator: '-' });;
     this.kmsKey = props.kmsKey;
     this.crawlingRate = props.crawlingRate ?? 300
 
     // L1 instantiation
     this.__resource = new CfnDataSource(this, 'DataSource', {
       knowledgeBaseId: this.knowledgeBase.knowledgeBaseId,
-      name: this.name,
+      name: this.dataSourceName,
       dataDeletionPolicy: props.dataDeletionPolicy ?? DataDeletionPolicy.DELETE,
       dataSourceConfiguration: {
         type: this.dataSourceType,
@@ -145,7 +152,11 @@ export class WebCrawlerDataSource extends DataSourceNew {
           }
         },
       },
-      vectorIngestionConfiguration: props.vectorIngestionConfigurationProperty,
+      vectorIngestionConfiguration: {
+        chunkingConfiguration: props.chunkingStrategy?.configuration,
+        parsingConfiguration: props.parsingStrategy?.configuration,
+        customTransformationConfiguration: props.customTransformation?.configuration
+      },
       serverSideEncryptionConfiguration: this.kmsKey ? {
         kmsKeyArn: this.kmsKey.keyArn,
       } : undefined,

@@ -27,6 +27,11 @@ import {
 import { VectorIndex } from '../opensearch-vectorindex';
 import { VectorCollection } from '../opensearchserverless';
 import { PineconeVectorStore } from '../pinecone';
+import { S3DataSource, S3DataSourceAssociationProps } from './data-sources/s3-data-source';
+import { WebCrawlerDataSource, WebCrawlerDataSourceAssociationProps } from './data-sources/web-data-source';
+import { SharepointDataSource, SharepointDataSourceAssociationProps } from './data-sources/sharepoint-data-source';
+import { ConfluenceDataSource, ConfluenceDataSourceAssociationProps } from './data-sources/confluence-data-source';
+import { SalesforceDataSource, SalesforceDataSourceAssociationProps } from './data-sources/salesforce-data-source';
 
 /**
  * Knowledge base can be backed by different vector databases.
@@ -213,10 +218,10 @@ export class KnowledgeBase extends Construct {
    * The vector store for the knowledge base.
    */
   public readonly vectorStore:
-  | VectorCollection
-  | PineconeVectorStore
-  | AmazonAuroraVectorStore
-  | AmazonAuroraDefaultVectorStore;
+    | VectorCollection
+    | PineconeVectorStore
+    | AmazonAuroraVectorStore
+    | AmazonAuroraDefaultVectorStore;
 
   /**
    * A narrative instruction of the knowledge base.
@@ -435,12 +440,12 @@ export class KnowledgeBase extends Construct {
           : vectorField,
       textField:
         this.vectorStore instanceof AmazonAuroraVectorStore ||
-        this.vectorStore instanceof PineconeVectorStore
+          this.vectorStore instanceof PineconeVectorStore
           ? this.vectorStore.textField
           : textField,
       metadataField:
         this.vectorStore instanceof AmazonAuroraVectorStore ||
-        this.vectorStore instanceof PineconeVectorStore
+          this.vectorStore instanceof PineconeVectorStore
           ? this.vectorStore.metadataField
           : metadataField,
     };
@@ -632,15 +637,47 @@ export class KnowledgeBase extends Construct {
    */
   public associateToAgent(agent: Agent) {
     const agentKnowledgeBaseProperty: bedrock.CfnAgent.AgentKnowledgeBaseProperty =
-      {
-        description: this.description,
-        knowledgeBaseId: this.knowledgeBaseId,
-        knowledgeBaseState: this.knowledgeBaseState,
-      };
+    {
+      description: this.description,
+      knowledgeBaseId: this.knowledgeBaseId,
+      knowledgeBaseState: this.knowledgeBaseState,
+    };
     agent.knowledgeBases = [agentKnowledgeBaseProperty];
   }
-}
 
+  // ------------------------------------------------------
+  // Helper methods to add Data Sources
+  // ------------------------------------------------------
+  public addS3DataSource(props: S3DataSourceAssociationProps): S3DataSource {
+    return new S3DataSource(this, `s3-${props.bucket.bucketName}`, {
+      knowledgeBase: this, ...props,
+    });
+  }
+  public addWebCrawlerDataSource(props: WebCrawlerDataSourceAssociationProps): WebCrawlerDataSource {
+    const url = new URL(props.sourceUrls[0])
+    return new WebCrawlerDataSource(this, `web-${url.hostname.replace('.', '-')}`, {
+      knowledgeBase: this, ...props,
+    });
+  }
+  public addSharePointDataSource(props: SharepointDataSourceAssociationProps): SharepointDataSource {
+    const url = new URL(props.domain)
+    return new SharepointDataSource(this, `sp-${url.hostname.replace('.', '-')}`, {
+      knowledgeBase: this, ...props,
+    })
+  }
+  public addConfluenceDataSource(props: ConfluenceDataSourceAssociationProps): ConfluenceDataSource {
+    const url = new URL(props.endpoint)
+    return new ConfluenceDataSource(this, `cf-${url.hostname.replace('.', '-')}`, {
+      knowledgeBase: this, ...props,
+    })
+  }
+  public addSalesforceDataSource(props: SalesforceDataSourceAssociationProps): SalesforceDataSource {
+    const url = new URL(props.endpoint)
+    return new SalesforceDataSource(this, `sf-${url.hostname.replace('.', '-')}`, {
+      knowledgeBase: this, ...props,
+    })
+  }
+}
 /**
  * Validate that Bedrock Knowledge Base can use the selected model.
  *
@@ -669,19 +706,19 @@ function validateVectorIndex(
   if (!(vectorStore instanceof VectorCollection) && vectorIndex) {
     throw new Error(
       'If vectorStore is not of type VectorCollection, vectorIndex should not be provided ' +
-        'in KnowledgeBase construct.',
+      'in KnowledgeBase construct.',
     );
   }
   if (!(vectorStore instanceof VectorCollection) && indexName) {
     throw new Error(
       'If vectorStore is not of type VectorCollection, indexName should not be provided ' +
-        'in KnowledgeBase construct.',
+      'in KnowledgeBase construct.',
     );
   }
   if (!(vectorStore instanceof VectorCollection) && vectorField) {
     throw new Error(
       'If vectorStore is not of type VectorCollection, vectorField should not be provided ' +
-        'in KnowledgeBase construct.',
+      'in KnowledgeBase construct.',
     );
   }
 }
@@ -706,10 +743,10 @@ function validateIndexParameters(
     if (vectorIndex.indexName !== indexName) {
       throw new Error(
         'Default value of indexName is `bedrock-knowledge-base-default-index`.' +
-          ' If you create VectorIndex manually and assign vectorIndex to value other than' +
-          ' `bedrock-knowledge-base-default-index` then you must provide the same value in KnowledgeBase construct.' +
-          ' If you created VectorIndex manually and set it to `bedrock-knowledge-base-default-index`' +
-          ' then do not assign indexName in KnowledgeBase construct.',
+        ' If you create VectorIndex manually and assign vectorIndex to value other than' +
+        ' `bedrock-knowledge-base-default-index` then you must provide the same value in KnowledgeBase construct.' +
+        ' If you created VectorIndex manually and set it to `bedrock-knowledge-base-default-index`' +
+        ' then do not assign indexName in KnowledgeBase construct.',
       );
     }
   }
@@ -717,10 +754,10 @@ function validateIndexParameters(
     if (vectorIndex.vectorField !== vectorField) {
       throw new Error(
         'Default value of vectorField is `bedrock-knowledge-base-default-vector`.' +
-          ' If you create VectorIndex manually and assign vectorField to value other than' +
-          ' `bedrock-knowledge-base-default-field` then you must provide the same value in KnowledgeBase construct.' +
-          ' If you created VectorIndex manually and set it to `bedrock-knowledge-base-default-vector`' +
-          ' then do not assign vectorField in KnowledgeBase construct.',
+        ' If you create VectorIndex manually and assign vectorField to value other than' +
+        ' `bedrock-knowledge-base-default-field` then you must provide the same value in KnowledgeBase construct.' +
+        ' If you created VectorIndex manually and set it to `bedrock-knowledge-base-default-vector`' +
+        ' then do not assign vectorField in KnowledgeBase construct.',
       );
     }
   }
@@ -786,4 +823,5 @@ function getStorageConfiguration(params: StorageConfiguration): any {
         `Unsupported vector store type: ${params.vectorStoreType}`,
       );
   }
+
 }
