@@ -12,7 +12,7 @@
 
 > `readonly` **parsingModel**: `IModel`
 
-The Foundational Model to use for parsing
+The Foundational Model to use for parsing such as Claude 3 Sonnet v1.
 
 ***
 

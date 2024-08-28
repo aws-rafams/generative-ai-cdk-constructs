@@ -14,9 +14,9 @@ import { CfnDataSource } from 'aws-cdk-lib/aws-bedrock';
 import { IKey } from 'aws-cdk-lib/aws-kms';
 import { Construct } from 'constructs';
 
-import { KnowledgeBase } from './../knowledge-base';
 import { DataDeletionPolicy, DataSourceNew, DataSourceAssociationProps, DataSourceType } from './base-data-source';
 import { generatePhysicalNameV2 } from '../../../common/helpers/utils';
+import { KnowledgeBase } from '../knowledge-base';
 
 export enum CrawlingScope {
   /**
@@ -140,7 +140,7 @@ export class WebCrawlerDataSource extends DataSourceNew {
             crawlerLimits: {
               rateLimit: this.crawlingRate,
             },
-            scope: (props.crawlingScope || CrawlingScope.HOST_ONLY) ? props.crawlingScope : undefined,
+            scope: props.crawlingScope ?? CrawlingScope.HOST_ONLY,
             inclusionFilters: props.filters?.includePatterns,
             exclusionFilters: props.filters?.excludePatterns,
 
@@ -152,11 +152,11 @@ export class WebCrawlerDataSource extends DataSourceNew {
           },
         },
       },
-      vectorIngestionConfiguration: {
+      vectorIngestionConfiguration: (props.chunkingStrategy || props.parsingStrategy || props.customTransformation) ? {
         chunkingConfiguration: props.chunkingStrategy?.configuration,
         parsingConfiguration: props.parsingStrategy?.configuration,
         customTransformationConfiguration: props.customTransformation?.configuration,
-      },
+      } : undefined,
       serverSideEncryptionConfiguration: this.kmsKey ? {
         kmsKeyArn: this.kmsKey.keyArn,
       } : undefined,

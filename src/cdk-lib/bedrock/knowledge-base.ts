@@ -21,7 +21,7 @@ import { ConfluenceDataSource, ConfluenceDataSourceAssociationProps } from './da
 import { S3DataSource, S3DataSourceAssociationProps } from './data-sources/s3-data-source';
 import { SalesforceDataSource, SalesforceDataSourceAssociationProps } from './data-sources/salesforce-data-source';
 import { SharepointDataSource, SharepointDataSourceAssociationProps } from './data-sources/sharepoint-data-source';
-import { WebCrawlerDataSource, WebCrawlerDataSourceAssociationProps } from './data-sources/web-data-source';
+import { WebCrawlerDataSource, WebCrawlerDataSourceAssociationProps } from './data-sources/web-crawler-data-source';
 import { BedrockFoundationModel } from './models';
 import { generatePhysicalNameV2 } from '../../common/helpers/utils';
 import {
@@ -649,7 +649,7 @@ export class KnowledgeBase extends Construct {
   // Helper methods to add Data Sources
   // ------------------------------------------------------
   public addS3DataSource(props: S3DataSourceAssociationProps): S3DataSource {
-    return new S3DataSource(this, `s3-${props.bucket.bucketName}`, {
+    return new S3DataSource(this, `s3-${props.bucket.node.addr}`, {
       knowledgeBase: this, ...props,
     });
   }

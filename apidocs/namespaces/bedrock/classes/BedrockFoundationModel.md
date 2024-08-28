@@ -133,6 +133,20 @@ can instantiate a `BedrockFoundationModel` object, e.g: `new BedrockFoundationMo
 
 ***
 
+### asIModel()
+
+> **asIModel**(`construct`): `IModel`
+
+#### Parameters
+
+• **construct**: `IConstruct`
+
+#### Returns
+
+`IModel`
+
+***
+
 ### toString()
 
 > **toString**(): `string`

@@ -34,14 +34,25 @@ You can adjust these values based on your specific requirements using the
 
 ***
 
-### HIERARCHICAL
+### HIERARCHICAL\_COHERE
 
-> `readonly` `static` **HIERARCHICAL**: [`ChunkingStrategy`](ChunkingStrategy.md)
+> `readonly` `static` **HIERARCHICAL\_COHERE**: [`ChunkingStrategy`](ChunkingStrategy.md)
 
-Hierarchical Chunking with the default of Overlap tokens: 60,
-Max parent token size: 1500, and Max child token size: 300.
-You can adjust these values based on your specific requirements using the
-`ChunkingStrategy.hierarchical(params)` method.
+Hierarchical Chunking with the default for Cohere Models. 
+- Overlap tokens: 30
+- Max parent token size: 500
+- Max child token size: 100
+
+***
+
+### HIERARCHICAL\_TITAN
+
+> `readonly` `static` **HIERARCHICAL\_TITAN**: [`ChunkingStrategy`](ChunkingStrategy.md)
+
+Hierarchical Chunking with the default for Titan Models. 
+- Overlap tokens: 60
+- Max parent token size: 1500
+- Max child token size: 300
 
 ***
 
@@ -85,7 +96,10 @@ Method for customizing a fixed sized chunking strategy.
 
 > `static` **hierarchical**(`props`): [`ChunkingStrategy`](ChunkingStrategy.md)
 
-Method for customizing a hierarchical chunking strategy.
+Method for customizing a hierarchical chunking strategy. 
+For custom chunking, the maximum token chunk size depends on the model.
+- Amazon Titan Text Embeddings: 8192
+- Cohere Embed models: 512
 
 #### Parameters
 
@@ -101,7 +115,10 @@ Method for customizing a hierarchical chunking strategy.
 
 > `static` **semantic**(`props`): [`ChunkingStrategy`](ChunkingStrategy.md)
 
-Method for customizing a semantic chunking strategy.
+Method for customizing a semantic chunking strategy. 
+For custom chunking, the maximum token chunk size depends on the model.
+- Amazon Titan Text Embeddings: 8192
+- Cohere Embed models: 512
 
 #### Parameters
 

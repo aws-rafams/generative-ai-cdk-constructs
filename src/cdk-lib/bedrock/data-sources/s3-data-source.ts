@@ -116,11 +116,11 @@ export class S3DataSource extends DataSourceNew {
           inclusionPrefixes: props.inclusionPrefixes,
         },
       },
-      vectorIngestionConfiguration: {
+      vectorIngestionConfiguration: (props.chunkingStrategy || props.parsingStrategy || props.customTransformation) ? {
         chunkingConfiguration: props.chunkingStrategy?.configuration,
         parsingConfiguration: props.parsingStrategy?.configuration,
         customTransformationConfiguration: props.customTransformation?.configuration,
-      },
+      } : undefined,
       serverSideEncryptionConfiguration: this.kmsKey ? {
         kmsKeyArn: this.kmsKey.keyArn,
       } : undefined,

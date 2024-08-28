@@ -178,11 +178,11 @@ export class SalesforceDataSource extends DataSourceNew {
             }) : undefined,
         },
       },
-      vectorIngestionConfiguration: {
+      vectorIngestionConfiguration: (props.chunkingStrategy || props.parsingStrategy || props.customTransformation) ? {
         chunkingConfiguration: props.chunkingStrategy?.configuration,
         parsingConfiguration: props.parsingStrategy?.configuration,
         customTransformationConfiguration: props.customTransformation?.configuration,
-      },
+      } : undefined,
       serverSideEncryptionConfiguration: this.kmsKey ? {
         kmsKeyArn: this.kmsKey.keyArn,
       } : undefined,

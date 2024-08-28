@@ -166,7 +166,7 @@ describe('S3 Data Source', () => {
       bucket,
       knowledgeBase: kb,
       dataSourceName: 'TestDataSource',
-      chunkingStrategy: bedrock.ChunkingStrategy.HIERARCHICAL,
+      chunkingStrategy: bedrock.ChunkingStrategy.HIERARCHICAL_TITAN,
     });
 
     Template.fromStack(stack).hasResourceProperties('AWS::Bedrock::DataSource', {

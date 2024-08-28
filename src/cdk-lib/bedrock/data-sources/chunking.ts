@@ -83,12 +83,22 @@ export abstract class ChunkingStrategy {
     { maxTokens: 300, overlapPercentage: 20 },
   );
   /**
-   * Hierarchical Chunking with the default of Overlap tokens: 60,
-   * Max parent token size: 1500, and Max child token size: 300.
-   * You can adjust these values based on your specific requirements using the
-   * `ChunkingStrategy.hierarchical(params)` method.
+   * Hierarchical Chunking with the default for Cohere Models.
+   * - Overlap tokens: 30
+   * - Max parent token size: 500
+   * - Max child token size: 100
    */
-  public static readonly HIERARCHICAL = ChunkingStrategy.hierarchical(
+  public static readonly HIERARCHICAL_COHERE = ChunkingStrategy.hierarchical(
+    { overlapTokens: 60, maxParentTokenSize: 500, maxChildTokenSize: 300 },
+  );
+
+  /**
+   * Hierarchical Chunking with the default for Titan Models.
+   * - Overlap tokens: 60
+   * - Max parent token size: 1500
+   * - Max child token size: 300
+   */
+  public static readonly HIERARCHICAL_TITAN = ChunkingStrategy.hierarchical(
     { overlapTokens: 60, maxParentTokenSize: 1500, maxChildTokenSize: 300 },
   );
   /**
@@ -119,7 +129,12 @@ export abstract class ChunkingStrategy {
     };
   }
 
-  /** Method for customizing a hierarchical chunking strategy. */
+  /**
+   * Method for customizing a hierarchical chunking strategy.
+   * For custom chunking, the maximum token chunk size depends on the model.
+   * - Amazon Titan Text Embeddings: 8192
+   * - Cohere Embed models: 512
+  */
   public static hierarchical(props: HierarchicalChunkingProps): ChunkingStrategy {
     return {
       configuration: {
@@ -135,7 +150,12 @@ export abstract class ChunkingStrategy {
     };
   }
 
-  /** Method for customizing a semantic chunking strategy. */
+  /**
+   * Method for customizing a semantic chunking strategy.
+   * For custom chunking, the maximum token chunk size depends on the model.
+   * - Amazon Titan Text Embeddings: 8192
+   * - Cohere Embed models: 512
+  */
   public static semantic(props: CfnDataSource.SemanticChunkingConfigurationProperty): ChunkingStrategy {
     return {
       configuration: {

@@ -21,7 +21,7 @@ enum ParsingStategyType {
 
 export interface FoundationModelParsingStategyProps {
   /**
-   * The Foundational Model to use for parsing
+   * The Foundational Model to use for parsing such as Claude 3 Sonnet v1.
    */
   readonly parsingModel: IModel;
 

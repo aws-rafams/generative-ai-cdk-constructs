@@ -12,6 +12,7 @@
  */
 
 import * as cdk from 'aws-cdk-lib';
+import { IModel } from 'aws-cdk-lib/aws-bedrock';
 import { IConstruct } from 'constructs';
 
 export interface BedrockFoundationModelProps {
@@ -104,5 +105,9 @@ export class BedrockFoundationModel {
   asArn(construct: IConstruct): string {
     const region = cdk.Stack.of(construct).region;
     return `arn:aws:bedrock:${region}::foundation-model/${this.modelId}`;
+  }
+
+  asIModel(construct: IConstruct): IModel {
+    return { modelArn: this.asArn(construct) };
   }
 }
