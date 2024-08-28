@@ -28,7 +28,7 @@ Fixed Sized Chunking with the default chunk size of 300 tokens and 20% overlap.
 
 > `readonly` `static` **FIXED\_SIZE**: [`ChunkingStrategy`](ChunkingStrategy.md)
 
-Fixed Sized Chunking with the default chunk size of 300 tokens and 20% overlap. 
+Fixed Sized Chunking with the default chunk size of 300 tokens and 20% overlap.
 You can adjust these values based on your specific requirements using the
 `ChunkingStrategy.fixedSize(params)` method.
 
@@ -38,8 +38,8 @@ You can adjust these values based on your specific requirements using the
 
 > `readonly` `static` **HIERARCHICAL**: [`ChunkingStrategy`](ChunkingStrategy.md)
 
-Hierarchical Chunking with the default of Overlap tokens: 60, 
-Max parent token size: 1500, and Max child token size: 300. 
+Hierarchical Chunking with the default of Overlap tokens: 60,
+Max parent token size: 1500, and Max child token size: 300.
 You can adjust these values based on your specific requirements using the
 `ChunkingStrategy.hierarchical(params)` method.
 
@@ -49,7 +49,7 @@ You can adjust these values based on your specific requirements using the
 
 > `readonly` `static` **NONE**: [`ChunkingStrategy`](ChunkingStrategy.md)
 
-Amazon Bedrock treats each file as one chunk. Suitable for documents that 
+Amazon Bedrock treats each file as one chunk. Suitable for documents that
 are already pre-processed or text split.
 
 ***
@@ -58,8 +58,8 @@ are already pre-processed or text split.
 
 > `readonly` `static` **SEMANTIC**: [`ChunkingStrategy`](ChunkingStrategy.md)
 
-Semantic Chunking with the default of bufferSize: 0, 
-breakpointPercentileThreshold: 95, and maxTokens: 300. 
+Semantic Chunking with the default of bufferSize: 0,
+breakpointPercentileThreshold: 95, and maxTokens: 300.
 You can adjust these values based on your specific requirements using the
 `ChunkingStrategy.semantic(params)` method.
 

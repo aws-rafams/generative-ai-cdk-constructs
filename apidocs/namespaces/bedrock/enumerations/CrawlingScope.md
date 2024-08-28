@@ -21,5 +21,5 @@ Crawls only web pages that belong to the same host or primary domain.
 > **SUBDOMAINS**: `"SUBDOMAINS"`
 
 Includes subdomains in addition to the host or primary domain, i.e.
-web pages that contain "aws.amazon.com" can also include 
+web pages that contain "aws.amazon.com" can also include
 sub domain "docs.aws.amazon.com"

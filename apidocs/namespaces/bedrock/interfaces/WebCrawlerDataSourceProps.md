@@ -19,7 +19,7 @@ Interface to create a new standalone data source object.
 > `readonly` `optional` **chunkingStrategy**: [`ChunkingStrategy`](../classes/ChunkingStrategy.md)
 
 The chunking stategy to use for splitting your documents or content.
-The chunks are then converted to embeddings and written to the vector 
+The chunks are then converted to embeddings and written to the vector
 index allowing for similarity search and retrieval of the content.
 
 #### Default
@@ -147,7 +147,7 @@ A description of the data source.
 
 > `readonly` `optional` **filters**: [`CrawlingFilters`](CrawlingFilters.md)
 
-The filters (regular expression patterns) for the crawling. 
+The filters (regular expression patterns) for the crawling.
 If there's a conflict, the exclude pattern takes precedence.
 
 #### Default

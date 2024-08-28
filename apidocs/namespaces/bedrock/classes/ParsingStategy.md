@@ -30,7 +30,7 @@ The CloudFormation property representation of this configuration
 
 > `static` **foundationModel**(`props`): [`ParsingStategy`](ParsingStategy.md)
 
-This feature allows you to select a foundation model for parsing of 
+This feature allows you to select a foundation model for parsing of
 non-textual information from documents such as tables and charts.
 
 #### Parameters

@@ -18,7 +18,7 @@ Interface to create a new standalone data source object.
 
 > `readonly` **authSecret**: `ISecret`
 
-The AWS Secrets Manager secret that stores your authentication credentials 
+The AWS Secrets Manager secret that stores your authentication credentials
 for your Confluence instance URL. Secret must start with "AmazonBedrock-".
 
 #### Inherited from
@@ -50,7 +50,7 @@ ConfluenceDataSourceAuthType.OAUTH2_CLIENT_CREDENTIALS
 > `readonly` `optional` **chunkingStrategy**: [`ChunkingStrategy`](../classes/ChunkingStrategy.md)
 
 The chunking stategy to use for splitting your documents or content.
-The chunks are then converted to embeddings and written to the vector 
+The chunks are then converted to embeddings and written to the vector
 index allowing for similarity search and retrieval of the content.
 
 #### Default
@@ -159,7 +159,7 @@ https://example.atlassian.net
 
 > `readonly` `optional` **filters**: [`ConfluenceCrawlingFilters`](ConfluenceCrawlingFilters.md)[]
 
-The filters (regular expression patterns) for the crawling. 
+The filters (regular expression patterns) for the crawling.
 If there's a conflict, the exclude pattern takes precedence.
 
 #### Default

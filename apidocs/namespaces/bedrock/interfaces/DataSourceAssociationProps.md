@@ -23,7 +23,7 @@ Properties common for creating any of the different data source types.
 > `readonly` `optional` **chunkingStrategy**: [`ChunkingStrategy`](../classes/ChunkingStrategy.md)
 
 The chunking stategy to use for splitting your documents or content.
-The chunks are then converted to embeddings and written to the vector 
+The chunks are then converted to embeddings and written to the vector
 index allowing for similarity search and retrieval of the content.
 
 #### Default

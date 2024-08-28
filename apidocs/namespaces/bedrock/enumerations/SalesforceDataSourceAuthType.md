@@ -12,5 +12,5 @@
 
 > **OAUTH2\_CLIENT\_CREDENTIALS**: `"OAUTH2_CLIENT_CREDENTIALS"`
 
-Your secret authentication credentials in AWS Secrets Manager should include: 
+Your secret authentication credentials in AWS Secrets Manager should include:
 `consumerKey` (app client ID), `consumerSecret` (client secret), and `authenticationUrl`.

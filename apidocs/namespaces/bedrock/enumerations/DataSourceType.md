@@ -44,5 +44,5 @@ Connects to a Microsoft SharePoint instance.
 
 > **WEB\_CRAWLER**: `"WEB"`
 
-Leverages a Web page crawler that extracts content from public web pages 
+Leverages a Web page crawler that extracts content from public web pages
 which you are authorized to crawl.

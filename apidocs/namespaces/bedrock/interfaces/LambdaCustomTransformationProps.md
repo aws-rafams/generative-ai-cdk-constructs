@@ -20,7 +20,7 @@ The Lambda function to use to process documents.
 
 > `readonly` **s3BucketUri**: `string`
 
-An S3 bucket URL/path to store your input documents to run your 
+An S3 bucket URL/path to store your input documents to run your
 Lambda function on and to also store the output of the documents.
 
 #### Example

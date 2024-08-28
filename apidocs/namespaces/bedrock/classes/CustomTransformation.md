@@ -30,7 +30,7 @@ The CloudFormation property representation of this configuration
 
 > `static` **lambda**(`props`): [`CustomTransformation`](CustomTransformation.md)
 
-This feature allows you to use a Lambda function to inject your own logic 
+This feature allows you to use a Lambda function to inject your own logic
 into the knowledge base ingestion process.
 
 #### Parameters

@@ -21,5 +21,5 @@ Your secret authentication credentials in AWS Secrets Manager should include:
 
 > **OAUTH2\_CLIENT\_CREDENTIALS**: `"OAUTH2_CLIENT_CREDENTIALS"`
 
-Your secret authentication credentials in AWS Secrets Manager should include: 
+Your secret authentication credentials in AWS Secrets Manager should include:
 `confluenceAppKey`, `confluenceAppSecret`, `confluenceAccessToken`, `confluenceRefreshToken`.
