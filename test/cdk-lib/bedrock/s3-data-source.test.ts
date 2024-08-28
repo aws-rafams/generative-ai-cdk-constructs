@@ -13,9 +13,11 @@
 
 import * as cdk from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
+import { FoundationModel, FoundationModelIdentifier } from 'aws-cdk-lib/aws-bedrock';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { AwsSolutionsChecks } from 'cdk-nag';
 import * as bedrock from '../../../src/cdk-lib/bedrock';
+
 
 // mock lambda.Code.fromDockerBuild()
 jest.mock('aws-cdk-lib/aws-lambda', () => {
@@ -45,53 +47,52 @@ describe('S3 Data Source', () => {
     });
   });
 
-  test('Fixed size chunking', () => {
-    new bedrock.S3DataSource(stack, 'TestDataSource', {
-      bucket,
-      knowledgeBase: kb,
-      dataSourceName: 'TestDataSource',
-      chunkingStrategy: bedrock.ChunkingStrategy.FIXED_SIZE,
-      maxTokens: 1024,
-      overlapPercentage: 20,
-    });
-
-    Template.fromStack(stack).hasResourceProperties('AWS::Bedrock::DataSource', {
-
-      VectorIngestionConfiguration:
-       {
-         ChunkingConfiguration: {
-           ChunkingStrategy: 'FIXED_SIZE',
-           FixedSizeChunkingConfiguration: {
-             MaxTokens: 1024,
-             OverlapPercentage: 20,
-           },
-         },
-       },
-    });
-  });
-
   test('Default chunking', () => {
     new bedrock.S3DataSource(stack, 'TestDataSource', {
       bucket,
       knowledgeBase: kb,
       dataSourceName: 'TestDataSource',
       chunkingStrategy: bedrock.ChunkingStrategy.DEFAULT,
-      maxTokens: 1024,
-      overlapPercentage: 20,
     });
 
     Template.fromStack(stack).hasResourceProperties('AWS::Bedrock::DataSource', {
 
       VectorIngestionConfiguration:
-       {
-         ChunkingConfiguration: {
-           ChunkingStrategy: 'FIXED_SIZE',
-           FixedSizeChunkingConfiguration: {
-             MaxTokens: 300,
-             OverlapPercentage: 20,
-           },
-         },
-       },
+      {
+        ChunkingConfiguration: {
+          ChunkingStrategy: 'FIXED_SIZE',
+          FixedSizeChunkingConfiguration: {
+            MaxTokens: 300,
+            OverlapPercentage: 20,
+          },
+        },
+      },
+    });
+  });
+
+  test('Fixed size chunking', () => {
+    new bedrock.S3DataSource(stack, 'TestDataSource', {
+      bucket,
+      knowledgeBase: kb,
+      dataSourceName: 'TestDataSource',
+      chunkingStrategy: bedrock.ChunkingStrategy.fixedSize({
+        maxTokens: 1024,
+        overlapPercentage: 20,
+      }),
+    });
+
+    Template.fromStack(stack).hasResourceProperties('AWS::Bedrock::DataSource', {
+
+      VectorIngestionConfiguration:
+      {
+        ChunkingConfiguration: {
+          ChunkingStrategy: 'FIXED_SIZE',
+          FixedSizeChunkingConfiguration: {
+            MaxTokens: 1024,
+            OverlapPercentage: 20,
+          },
+        },
+      },
     });
   });
 
@@ -105,11 +106,134 @@ describe('S3 Data Source', () => {
 
     Template.fromStack(stack).hasResourceProperties('AWS::Bedrock::DataSource', {
       VectorIngestionConfiguration:
-       {
-         ChunkingConfiguration:
-        { ChunkingStrategy: 'NONE' },
-       },
+      {
+        ChunkingConfiguration:
+          { ChunkingStrategy: 'NONE' },
+      },
     });
   });
+
+  test('Semantic chunking - default', () => {
+    new bedrock.S3DataSource(stack, 'TestDataSource', {
+      bucket,
+      knowledgeBase: kb,
+      dataSourceName: 'TestDataSource',
+      chunkingStrategy: bedrock.ChunkingStrategy.SEMANTIC,
+    });
+
+    Template.fromStack(stack).hasResourceProperties('AWS::Bedrock::DataSource', {
+      VectorIngestionConfiguration: {
+        ChunkingConfiguration: {
+          ChunkingStrategy: 'SEMANTIC',
+          SemanticChunkingConfiguration: {
+            MaxTokens: 300,
+            BufferSize: 0,
+            BreakpointPercentileThreshold: 95,
+          },
+        },
+      },
+    });
+  });
+
+  test('Semantic chunking', () => {
+    new bedrock.S3DataSource(stack, 'TestDataSource', {
+      bucket,
+      knowledgeBase: kb,
+      dataSourceName: 'TestDataSource',
+      chunkingStrategy: bedrock.ChunkingStrategy.semantic({
+        maxTokens: 1024,
+        bufferSize: 1,
+        breakpointPercentileThreshold: 99,
+      }),
+    });
+
+    Template.fromStack(stack).hasResourceProperties('AWS::Bedrock::DataSource', {
+      VectorIngestionConfiguration: {
+        ChunkingConfiguration: {
+          ChunkingStrategy: 'SEMANTIC',
+          SemanticChunkingConfiguration: {
+            MaxTokens: 1024,
+            BufferSize: 1,
+            BreakpointPercentileThreshold: 99,
+          },
+        },
+      },
+    });
+  });
+
+  test('Hierarchical chunking - default', () => {
+    new bedrock.S3DataSource(stack, 'TestDataSource', {
+      bucket,
+      knowledgeBase: kb,
+      dataSourceName: 'TestDataSource',
+      chunkingStrategy: bedrock.ChunkingStrategy.HIERARCHICAL,
+    });
+
+    Template.fromStack(stack).hasResourceProperties('AWS::Bedrock::DataSource', {
+      VectorIngestionConfiguration: {
+        ChunkingConfiguration: {
+          ChunkingStrategy: 'HIERARCHICAL',
+          HierarchicalChunkingConfiguration: {
+            LevelConfigurations: [
+              { MaxTokens: 1500 }, // Parent max tokens
+              { MaxTokens: 300 }, // Child max tokens
+            ],
+            OverlapTokens: 60,
+          },
+        },
+      },
+    });
+  });
+
+  test('Hierarchical chunking - custom', () => {
+    new bedrock.S3DataSource(stack, 'TestDataSource', {
+      bucket,
+      knowledgeBase: kb,
+      dataSourceName: 'TestDataSource',
+      chunkingStrategy: bedrock.ChunkingStrategy.hierarchical({
+        maxParentTokenSize: 1024,
+        maxChildTokenSize: 256,
+        overlapTokens: 30,
+      }),
+    });
+
+    Template.fromStack(stack).hasResourceProperties('AWS::Bedrock::DataSource', {
+      VectorIngestionConfiguration: {
+        ChunkingConfiguration: {
+          ChunkingStrategy: 'HIERARCHICAL',
+          HierarchicalChunkingConfiguration: {
+            LevelConfigurations: [
+              { MaxTokens: 1024 }, // Parent max tokens
+              { MaxTokens: 256 }, // Child max tokens
+            ],
+            OverlapTokens: 30,
+          },
+        },
+      },
+    });
+  });
+
+  test('FM parsing', () => {
+
+    new bedrock.S3DataSource(stack, 'TestDataSource', {
+      bucket,
+      knowledgeBase: kb,
+      dataSourceName: 'TestDataSource',
+      parsingStrategy: bedrock.ParsingStategy.foundationModel({
+        parsingModel: FoundationModel.fromFoundationModelId(stack, 'model',
+          FoundationModelIdentifier.ANTHROPIC_CLAUDE_3_SONNET_20240229_V1_0,
+        ),
+      }),
+    });
+
+    Template.fromStack(stack).hasResourceProperties('AWS::Bedrock::DataSource', {
+      VectorIngestionConfiguration: {
+        ParsingConfiguration: {
+          ParsingStrategy: 'BEDROCK_FOUNDATION_MODEL',
+        },
+      },
+    });
+  });
+
 
 });

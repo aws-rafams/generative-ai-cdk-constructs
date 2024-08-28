@@ -10,27 +10,27 @@
  *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions
  *  and limitations under the License.
  */
-import { Construct } from "constructs";
-import { IKey } from "aws-cdk-lib/aws-kms";
-import { CfnDataSource } from "aws-cdk-lib/aws-bedrock";
+import { CfnDataSource } from 'aws-cdk-lib/aws-bedrock';
+import { IKey } from 'aws-cdk-lib/aws-kms';
+import { Construct } from 'constructs';
 
-import { DataDeletionPolicy, DataSourceNew, DataSourceAssociationProps, DataSourceType } from "./base-data-source";
 import { KnowledgeBase } from './../knowledge-base';
+import { DataDeletionPolicy, DataSourceNew, DataSourceAssociationProps, DataSourceType } from './base-data-source';
 import { generatePhysicalNameV2 } from '../../../common/helpers/utils';
 
 export enum CrawlingScope {
   /**
    * Crawls only web pages that belong to the same host or primary domain.
    */
-  HOST_ONLY = "HOST_ONLY",
+  HOST_ONLY = 'HOST_ONLY',
   /**
    * Includes subdomains in addition to the host or primary domain, i.e.
-   * web pages that contain "aws.amazon.com" can also include 
+   * web pages that contain "aws.amazon.com" can also include
    * sub domain "docs.aws.amazon.com"
    */
-  SUBDOMAINS = "SUBDOMAINS",
+  SUBDOMAINS = 'SUBDOMAINS',
   /**
-   * Limit crawling to web pages that belong to the same host and with the 
+   * Limit crawling to web pages that belong to the same host and with the
    * same initial URL path.
    * @warning bug in resource handler - not specifying crawling scope makes it fail but resource creation succeeds.
    */
@@ -68,7 +68,7 @@ export interface WebCrawlerDataSourceAssociationProps extends DataSourceAssociat
    */
   readonly crawlingRate?: number;
   /**
-   * The filters (regular expression patterns) for the crawling. 
+   * The filters (regular expression patterns) for the crawling.
    * If there's a conflict, the exclude pattern takes precedence.
    * @default None
    */
@@ -126,7 +126,7 @@ export class WebCrawlerDataSource extends DataSourceNew {
     this.dataSourceType = DataSourceType.WEB_CRAWLER;
     this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 'crawler-datasource', { maxLength: 40, lower: true, separator: '-' });;
     this.kmsKey = props.kmsKey;
-    this.crawlingRate = props.crawlingRate ?? 300
+    this.crawlingRate = props.crawlingRate ?? 300;
 
     // L1 instantiation
     this.__resource = new CfnDataSource(this, 'DataSource', {
@@ -138,24 +138,24 @@ export class WebCrawlerDataSource extends DataSourceNew {
         webConfiguration: {
           crawlerConfiguration: {
             crawlerLimits: {
-              rateLimit: this.crawlingRate
+              rateLimit: this.crawlingRate,
             },
             scope: (props.crawlingScope || CrawlingScope.HOST_ONLY) ? props.crawlingScope : undefined,
             inclusionFilters: props.filters?.includePatterns,
-            exclusionFilters: props.filters?.excludePatterns
+            exclusionFilters: props.filters?.excludePatterns,
 
           },
           sourceConfiguration: {
             urlConfiguration: {
-              seedUrls: props.sourceUrls.map(item => ({ "url": item })),
-            }
-          }
+              seedUrls: props.sourceUrls.map(item => ({ url: item })),
+            },
+          },
         },
       },
       vectorIngestionConfiguration: {
         chunkingConfiguration: props.chunkingStrategy?.configuration,
         parsingConfiguration: props.parsingStrategy?.configuration,
-        customTransformationConfiguration: props.customTransformation?.configuration
+        customTransformationConfiguration: props.customTransformation?.configuration,
       },
       serverSideEncryptionConfiguration: this.kmsKey ? {
         kmsKeyArn: this.kmsKey.keyArn,

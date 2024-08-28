@@ -10,23 +10,23 @@
  *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions
  *  and limitations under the License.
  */
-import { Construct } from 'constructs';
-import { IKey } from 'aws-cdk-lib/aws-kms';
 import { CfnDataSource } from 'aws-cdk-lib/aws-bedrock';
+import { IKey } from 'aws-cdk-lib/aws-kms';
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
+import { Construct } from 'constructs';
 
-import { DataDeletionPolicy, DataSourceAssociationProps, DataSourceNew, DataSourceType } from './base-data-source';
 import { KnowledgeBase } from './../knowledge-base';
+import { DataDeletionPolicy, DataSourceAssociationProps, DataSourceNew, DataSourceType } from './base-data-source';
 import { generatePhysicalNameV2 } from '../../../common/helpers/utils';
 
 
 export enum ConfluenceDataSourceAuthType {
-  /** 
-   * Your secret authentication credentials in AWS Secrets Manager should include: 
+  /**
+   * Your secret authentication credentials in AWS Secrets Manager should include:
    * `confluenceAppKey`, `confluenceAppSecret`, `confluenceAccessToken`, `confluenceRefreshToken`.
    */
   OAUTH2_CLIENT_CREDENTIALS = 'OAUTH2_CLIENT_CREDENTIALS',
-  /** 
+  /**
    * Your secret authentication credentials in AWS Secrets Manager should include:
    *  `username` and `password` (API token).
    */
@@ -66,7 +66,7 @@ export interface ConfluenceDataSourceAssociationProps extends DataSourceAssociat
    */
   readonly endpoint: string;
   /**
-   * The AWS Secrets Manager secret that stores your authentication credentials 
+   * The AWS Secrets Manager secret that stores your authentication credentials
    * for your Confluence instance URL. Secret must start with "AmazonBedrock-".
    */
   readonly authSecret: ISecret;
@@ -76,7 +76,7 @@ export interface ConfluenceDataSourceAssociationProps extends DataSourceAssociat
    */
   readonly authType?: ConfluenceDataSourceAuthType;
   /**
-   * The filters (regular expression patterns) for the crawling. 
+   * The filters (regular expression patterns) for the crawling.
    * If there's a conflict, the exclude pattern takes precedence.
    * @default None - all your content is crawled.
    */
@@ -157,27 +157,27 @@ export class ConfluenceDataSource extends DataSourceNew {
             authType: props.authType ?? ConfluenceDataSourceAuthType.OAUTH2_CLIENT_CREDENTIALS,
             credentialsSecretArn: this.authSecret.secretArn,
             hostUrl: this.endpoint,
-            hostType: "SAAS"
+            hostType: 'SAAS',
           },
           crawlerConfiguration:
             (props.filters) ? ({
               filterConfiguration: {
-                type: "PATTERN",
+                type: 'PATTERN',
                 patternObjectFilter: {
                   filters: props.filters?.map(item => ({
                     objectType: item.objectType,
                     inclusionFilters: item.includePatterns,
-                    exclusionFilters: item.excludePatterns
-                  }))
-                }
-              }
-            }) : undefined
+                    exclusionFilters: item.excludePatterns,
+                  })),
+                },
+              },
+            }) : undefined,
         },
       },
       vectorIngestionConfiguration: {
         chunkingConfiguration: props.chunkingStrategy?.configuration,
         parsingConfiguration: props.parsingStrategy?.configuration,
-        customTransformationConfiguration: props.customTransformation?.configuration
+        customTransformationConfiguration: props.customTransformation?.configuration,
       },
       serverSideEncryptionConfiguration: this.kmsKey ? {
         kmsKeyArn: this.kmsKey.keyArn,

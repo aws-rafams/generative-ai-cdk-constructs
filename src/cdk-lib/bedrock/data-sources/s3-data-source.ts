@@ -10,15 +10,15 @@
  *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions
  *  and limitations under the License.
  */
-import { Construct } from 'constructs';
 import { CfnDataSource } from 'aws-cdk-lib/aws-bedrock';
-import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { IKey } from 'aws-cdk-lib/aws-kms';
+import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { NagSuppressions } from 'cdk-nag';
+import { Construct } from 'constructs';
 
 import { KnowledgeBase } from './../knowledge-base';
-import { generatePhysicalNameV2 } from '../../../common/helpers/utils';
 import { DataDeletionPolicy, DataSourceAssociationProps, DataSourceNew, DataSourceType } from './base-data-source';
+import { generatePhysicalNameV2 } from '../../../common/helpers/utils';
 
 
 /**
@@ -85,7 +85,6 @@ export class S3DataSource extends DataSourceNew {
   private readonly __resource: CfnDataSource;
 
 
-
   constructor(scope: Construct, id: string, props: S3DataSourceProps) {
     super(scope, id);
     // Assign attributes
@@ -120,7 +119,7 @@ export class S3DataSource extends DataSourceNew {
       vectorIngestionConfiguration: {
         chunkingConfiguration: props.chunkingStrategy?.configuration,
         parsingConfiguration: props.parsingStrategy?.configuration,
-        customTransformationConfiguration: props.customTransformation?.configuration
+        customTransformationConfiguration: props.customTransformation?.configuration,
       },
       serverSideEncryptionConfiguration: this.kmsKey ? {
         kmsKeyArn: this.kmsKey.keyArn,

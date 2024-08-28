@@ -10,7 +10,7 @@
  *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions
  *  and limitations under the License.
  */
-import { CfnDataSource } from "aws-cdk-lib/aws-bedrock";
+import { CfnDataSource } from 'aws-cdk-lib/aws-bedrock';
 
 /**
  * Knowledge base can split your source data into chunks. A chunk refers to an
@@ -26,16 +26,16 @@ enum ChunkingStrategyType {
    */
   FIXED_SIZE = 'FIXED_SIZE',
   /**
-   * Splits documents into layers of chunks where the first layer contains large 
-   * chunks, and the second layer contains smaller chunks derived from the first 
-   * layer. You set the maximum parent chunk token size and the maximum child 
-   * chunk token size. You also set the absolute number of overlap tokens between 
+   * Splits documents into layers of chunks where the first layer contains large
+   * chunks, and the second layer contains smaller chunks derived from the first
+   * layer. You set the maximum parent chunk token size and the maximum child
+   * chunk token size. You also set the absolute number of overlap tokens between
    * consecutive parent chunks and consecutive child chunks.
    */
   HIERARCHICAL = 'HIERARCHICAL',
   /**
-   * Splits documents into semantically similar text chunks or groups of 
-   * sentences by using a foundation model. Note that there are additional 
+   * Splits documents into semantically similar text chunks or groups of
+   * sentences by using a foundation model. Note that there are additional
    * costs to using semantic chunking due to its use of a foundation model.
    */
   SEMANTIC = 'SEMANTIC',
@@ -48,17 +48,17 @@ enum ChunkingStrategyType {
 }
 
 export interface HierarchicalChunkingProps {
-  /** 
-   * The overlap tokens between adjacent chunks. 
+  /**
+   * The overlap tokens between adjacent chunks.
    */
   readonly overlapTokens: number;
-  /** 
-   * Maximum number of tokens that a parent chunk can contain. 
+  /**
+   * Maximum number of tokens that a parent chunk can contain.
    * Keep in mind the maximum chunk size depends on the embedding model chosen.
    */
   readonly maxParentTokenSize: number;
-  /** 
-   * Maximum number of tokens that a child chunk can contain. 
+  /**
+   * Maximum number of tokens that a child chunk can contain.
    * Keep in mind the maximum chunk size depends on the embedding model chosen.
    */
   readonly maxChildTokenSize: number;
@@ -68,43 +68,43 @@ export abstract class ChunkingStrategy {
   // ------------------------------------------------------
   // Static Constants for Easy Customization
   // ------------------------------------------------------
-  /** 
-   * Fixed Sized Chunking with the default chunk size of 300 tokens and 20% overlap. 
+  /**
+   * Fixed Sized Chunking with the default chunk size of 300 tokens and 20% overlap.
    */
   public static readonly DEFAULT = ChunkingStrategy.fixedSize(
-    { maxTokens: 300, overlapPercentage: 20 }
-  )
-  /** 
-   * Fixed Sized Chunking with the default chunk size of 300 tokens and 20% overlap. 
+    { maxTokens: 300, overlapPercentage: 20 },
+  );
+  /**
+   * Fixed Sized Chunking with the default chunk size of 300 tokens and 20% overlap.
    * You can adjust these values based on your specific requirements using the
    * `ChunkingStrategy.fixedSize(params)` method.
    */
   public static readonly FIXED_SIZE = ChunkingStrategy.fixedSize(
-    { maxTokens: 300, overlapPercentage: 20 }
-  )
-  /** 
-   * Hierarchical Chunking with the default of Overlap tokens: 60, 
-   * Max parent token size: 1500, and Max child token size: 300. 
+    { maxTokens: 300, overlapPercentage: 20 },
+  );
+  /**
+   * Hierarchical Chunking with the default of Overlap tokens: 60,
+   * Max parent token size: 1500, and Max child token size: 300.
    * You can adjust these values based on your specific requirements using the
    * `ChunkingStrategy.hierarchical(params)` method.
    */
   public static readonly HIERARCHICAL = ChunkingStrategy.hierarchical(
-    { overlapTokens: 60, maxParentTokenSize: 1500, maxChildTokenSize: 300 }
-  )
-  /** 
-   * Semantic Chunking with the default of bufferSize: 0, 
-   * breakpointPercentileThreshold: 95, and maxTokens: 300. 
+    { overlapTokens: 60, maxParentTokenSize: 1500, maxChildTokenSize: 300 },
+  );
+  /**
+   * Semantic Chunking with the default of bufferSize: 0,
+   * breakpointPercentileThreshold: 95, and maxTokens: 300.
    * You can adjust these values based on your specific requirements using the
    * `ChunkingStrategy.semantic(params)` method.
    */
   public static readonly SEMANTIC = ChunkingStrategy.semantic(
-    { bufferSize: 0, breakpointPercentileThreshold: 95, maxTokens: 300 }
-  )
+    { bufferSize: 0, breakpointPercentileThreshold: 95, maxTokens: 300 },
+  );
   /**
-   * Amazon Bedrock treats each file as one chunk. Suitable for documents that 
+   * Amazon Bedrock treats each file as one chunk. Suitable for documents that
    * are already pre-processed or text split.
    */
-  public static readonly NONE = ChunkingStrategy.noChunking()
+  public static readonly NONE = ChunkingStrategy.noChunking();
 
   // ------------------------------------------------------
   // Static Methods for Customization
@@ -114,9 +114,9 @@ export abstract class ChunkingStrategy {
     return {
       configuration: {
         chunkingStrategy: ChunkingStrategyType.FIXED_SIZE,
-        fixedSizeChunkingConfiguration: props
+        fixedSizeChunkingConfiguration: props,
       },
-    }
+    };
   }
 
   /** Method for customizing a hierarchical chunking strategy. */
@@ -128,11 +128,11 @@ export abstract class ChunkingStrategy {
           overlapTokens: props.overlapTokens,
           levelConfigurations: [
             { maxTokens: props.maxParentTokenSize },
-            { maxTokens: props.maxChildTokenSize }
-          ]
+            { maxTokens: props.maxChildTokenSize },
+          ],
         },
       },
-    }
+    };
   }
 
   /** Method for customizing a semantic chunking strategy. */
@@ -140,18 +140,18 @@ export abstract class ChunkingStrategy {
     return {
       configuration: {
         chunkingStrategy: ChunkingStrategyType.SEMANTIC,
-        semanticChunkingConfiguration: props
+        semanticChunkingConfiguration: props,
       },
-    }
+    };
   }
 
   /** Method for defining a no chunking strategy. */
   private static noChunking(): ChunkingStrategy {
     return {
       configuration: {
-        chunkingStrategy: ChunkingStrategyType.NONE
+        chunkingStrategy: ChunkingStrategyType.NONE,
       },
-    }
+    };
   }
   // ------------------------------------------------------
   // Properties

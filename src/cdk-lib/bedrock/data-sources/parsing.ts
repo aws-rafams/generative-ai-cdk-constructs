@@ -11,12 +11,12 @@
  *  and limitations under the License.
  */
 
-import { CfnDataSource, IModel } from "aws-cdk-lib/aws-bedrock";
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from 'fs';
+import * as path from 'path';
+import { CfnDataSource, IModel } from 'aws-cdk-lib/aws-bedrock';
 
 enum ParsingStategyType {
-  FOUNDATION_MODEL = "BEDROCK_FOUNDATION_MODEL"
+  FOUNDATION_MODEL = 'BEDROCK_FOUNDATION_MODEL'
 }
 
 export interface FoundationModelParsingStategyProps {
@@ -40,8 +40,8 @@ export abstract class ParsingStategy {
   // FM Parsing Strategy
   // ------------------------------------------------------
   /**
-   * This feature allows you to select a foundation model for parsing of 
-   * non-textual information from documents such as tables and charts. 
+   * This feature allows you to select a foundation model for parsing of
+   * non-textual information from documents such as tables and charts.
    * @see https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking-parsing.html#kb-advanced-parsing
    */
   public static foundationModel(props: FoundationModelParsingStategyProps): ParsingStategy {
@@ -51,12 +51,12 @@ export abstract class ParsingStategy {
           modelArn: props.parsingModel.modelArn,
           parsingPrompt: {
             parsingPromptText: props.parsingPrompt
-              ?? fs.readFileSync(path.join(__dirname, "default-parsing-prompt.txt"), "utf8"),
-          }
+              ?? fs.readFileSync(path.join(__dirname, 'default-parsing-prompt.txt'), 'utf8'),
+          },
         },
         parsingStrategy: ParsingStategyType.FOUNDATION_MODEL,
-      }
-    }
+      },
+    };
   }
   // ------------------------------------------------------
   // Properties

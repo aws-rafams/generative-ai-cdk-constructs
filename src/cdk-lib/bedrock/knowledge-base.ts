@@ -17,6 +17,11 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { NagSuppressions } from 'cdk-nag/lib/nag-suppressions';
 import { Construct } from 'constructs';
 import { Agent } from './../bedrock/agent';
+import { ConfluenceDataSource, ConfluenceDataSourceAssociationProps } from './data-sources/confluence-data-source';
+import { S3DataSource, S3DataSourceAssociationProps } from './data-sources/s3-data-source';
+import { SalesforceDataSource, SalesforceDataSourceAssociationProps } from './data-sources/salesforce-data-source';
+import { SharepointDataSource, SharepointDataSourceAssociationProps } from './data-sources/sharepoint-data-source';
+import { WebCrawlerDataSource, WebCrawlerDataSourceAssociationProps } from './data-sources/web-data-source';
 import { BedrockFoundationModel } from './models';
 import { generatePhysicalNameV2 } from '../../common/helpers/utils';
 import {
@@ -27,11 +32,6 @@ import {
 import { VectorIndex } from '../opensearch-vectorindex';
 import { VectorCollection } from '../opensearchserverless';
 import { PineconeVectorStore } from '../pinecone';
-import { S3DataSource, S3DataSourceAssociationProps } from './data-sources/s3-data-source';
-import { WebCrawlerDataSource, WebCrawlerDataSourceAssociationProps } from './data-sources/web-data-source';
-import { SharepointDataSource, SharepointDataSourceAssociationProps } from './data-sources/sharepoint-data-source';
-import { ConfluenceDataSource, ConfluenceDataSourceAssociationProps } from './data-sources/confluence-data-source';
-import { SalesforceDataSource, SalesforceDataSourceAssociationProps } from './data-sources/salesforce-data-source';
 
 /**
  * Knowledge base can be backed by different vector databases.
@@ -218,10 +218,10 @@ export class KnowledgeBase extends Construct {
    * The vector store for the knowledge base.
    */
   public readonly vectorStore:
-    | VectorCollection
-    | PineconeVectorStore
-    | AmazonAuroraVectorStore
-    | AmazonAuroraDefaultVectorStore;
+  | VectorCollection
+  | PineconeVectorStore
+  | AmazonAuroraVectorStore
+  | AmazonAuroraDefaultVectorStore;
 
   /**
    * A narrative instruction of the knowledge base.
@@ -654,28 +654,28 @@ export class KnowledgeBase extends Construct {
     });
   }
   public addWebCrawlerDataSource(props: WebCrawlerDataSourceAssociationProps): WebCrawlerDataSource {
-    const url = new URL(props.sourceUrls[0])
+    const url = new URL(props.sourceUrls[0]);
     return new WebCrawlerDataSource(this, `web-${url.hostname.replace('.', '-')}`, {
       knowledgeBase: this, ...props,
     });
   }
   public addSharePointDataSource(props: SharepointDataSourceAssociationProps): SharepointDataSource {
-    const url = new URL(props.domain)
+    const url = new URL(props.domain);
     return new SharepointDataSource(this, `sp-${url.hostname.replace('.', '-')}`, {
       knowledgeBase: this, ...props,
-    })
+    });
   }
   public addConfluenceDataSource(props: ConfluenceDataSourceAssociationProps): ConfluenceDataSource {
-    const url = new URL(props.endpoint)
+    const url = new URL(props.endpoint);
     return new ConfluenceDataSource(this, `cf-${url.hostname.replace('.', '-')}`, {
       knowledgeBase: this, ...props,
-    })
+    });
   }
   public addSalesforceDataSource(props: SalesforceDataSourceAssociationProps): SalesforceDataSource {
-    const url = new URL(props.endpoint)
+    const url = new URL(props.endpoint);
     return new SalesforceDataSource(this, `sf-${url.hostname.replace('.', '-')}`, {
       knowledgeBase: this, ...props,
-    })
+    });
   }
 }
 /**

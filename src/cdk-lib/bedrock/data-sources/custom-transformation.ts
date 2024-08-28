@@ -11,8 +11,8 @@
  *  and limitations under the License.
  */
 
-import { CfnDataSource } from "aws-cdk-lib/aws-bedrock";
-import { IFunction } from "aws-cdk-lib/aws-lambda";
+import { CfnDataSource } from 'aws-cdk-lib/aws-bedrock';
+import { IFunction } from 'aws-cdk-lib/aws-lambda';
 
 export interface LambdaCustomTransformationProps {
   /**
@@ -21,7 +21,7 @@ export interface LambdaCustomTransformationProps {
   readonly lambdaFunction: IFunction;
 
   /**
-   * An S3 bucket URL/path to store your input documents to run your 
+   * An S3 bucket URL/path to store your input documents to run your
    * Lambda function on and to also store the output of the documents.
    * @example "s3://my-bucket/chunk-processor/"
    */
@@ -34,7 +34,7 @@ export abstract class CustomTransformation {
   // Lambda Transformation Strategy
   // ------------------------------------------------------
   /**
-   * This feature allows you to use a Lambda function to inject your own logic 
+   * This feature allows you to use a Lambda function to inject your own logic
    * into the knowledge base ingestion process.
    * @see https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking-parsing.html#kb-custom-transformation
    */
@@ -43,21 +43,21 @@ export abstract class CustomTransformation {
       configuration: {
         intermediateStorage: {
           s3Location: {
-            uri: props.s3BucketUri
-          }
+            uri: props.s3BucketUri,
+          },
         },
         transformations: [
           {
-            stepToApply: "POST_CHUNKING",
+            stepToApply: 'POST_CHUNKING',
             transformationFunction: {
               transformationLambdaConfiguration: {
-                lambdaArn: props.lambdaFunction.functionArn
-              }
-            }
-          }
-        ]
-      }
-    }
+                lambdaArn: props.lambdaFunction.functionArn,
+              },
+            },
+          },
+        ],
+      },
+    };
   }
   // ------------------------------------------------------
   // Properties
