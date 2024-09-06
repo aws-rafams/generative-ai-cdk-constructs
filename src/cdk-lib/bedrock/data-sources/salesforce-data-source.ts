@@ -145,7 +145,7 @@ export class SalesforceDataSource extends DataSourceNew {
     // Assign attributes
     this.knowledgeBase = props.knowledgeBase;
     this.dataSourceType = DataSourceType.SALESFORCE;
-    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 'sfdc-datasource', { maxLength: 40, lower: true, separator: '-' });;
+    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 'sfdc-ds', { maxLength: 40, lower: true, separator: '-' });;
     this.endpoint = props.endpoint;
     this.authSecret = props.authSecret;
     this.kmsKey = props.kmsKey;

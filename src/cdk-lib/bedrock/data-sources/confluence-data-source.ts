@@ -16,45 +16,83 @@ import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 import { KnowledgeBase } from './../knowledge-base';
-import { DataDeletionPolicy, DataSourceAssociationProps, DataSourceNew, DataSourceType } from './base-data-source';
+import { DataSourceAssociationProps, DataSourceNew, DataSourceType } from './base-data-source';
 import { generatePhysicalNameV2 } from '../../../common/helpers/utils';
 
-
+/**
+ * The different authentication types available to connect to your Confluence instance.
+ * @see https://docs.aws.amazon.com/bedrock/latest/userguide/confluence-data-source-connector.html#configuration-confluence-connector
+ */
 export enum ConfluenceDataSourceAuthType {
   /**
    * Your secret authentication credentials in AWS Secrets Manager should include:
-   * `confluenceAppKey`, `confluenceAppSecret`, `confluenceAccessToken`, `confluenceRefreshToken`.
+   * - `confluenceAppKey`
+   * - `confluenceAppSecret`
+   * - `confluenceAccessToken`
+   * - `confluenceRefreshToken`
    */
   OAUTH2_CLIENT_CREDENTIALS = 'OAUTH2_CLIENT_CREDENTIALS',
   /**
    * Your secret authentication credentials in AWS Secrets Manager should include:
-   *  `username` and `password` (API token).
+   *  - `username` (email of admin account)
+   *  - `password` (API token)
    */
-  BASIC = 'BASIC'
+  BASIC = 'BASIC',
 }
 
+/**
+ * Represents the different types of content objects in Confluence that can be 
+ * crawled by the data source.
+ */
 export enum ConfluenceObjectType {
   SPACE = 'Space',
   PAGE = 'Page',
   BLOG = 'Blog',
+  COMMENT = 'Comment',
   ATTACHMENT = 'Attachment',
-  COMMENT = 'Comment'
 }
 
+/**
+ * Defines filters for crawling Confluence content.
+ * These filters allow you to include or exclude specific content based on object types and patterns.
+ * 
+ * - For Spaces: Use the unique space key
+ * - For Pages: Use the main page title
+ * - For Blogs: Use the main blog title
+ * - For Comments: Use "Re: Page/Blog Title"
+ * - For Attachments: Use the filename with extension
+ * @remarks
+ * - You can specify inclusion and exclusion patterns using regular expressions.
+ * - If both inclusion and exclusion patterns match a document, the exclusion takes precedence.
+ * 
+ * @example
+ * To exclude PDF files with "private" in the filename:
+ * ```ts
+ * {
+ *   objectType: ConfluenceObjectType.ATTACHMENT,
+ *   excludePatterns: [".*private.*\\.pdf"]
+ * }
+ * ```
+ */
 export interface ConfluenceCrawlingFilters {
   /**
-   * Include object types.
+   * The type of Confluence object to apply the filters to.
    */
   readonly objectType: ConfluenceObjectType;
+
   /**
-   * Include patterns.
+   * Regular expression patterns to include content.
+   * If specified, only content matching these patterns will be crawled.
    */
   readonly includePatterns?: string[];
+
   /**
-   * Exclude paths.
+   * Regular expression patterns to exclude content.
+   * Content matching these patterns will not be crawled, even if it matches an include pattern.
    */
   readonly excludePatterns?: string[];
 }
+
 
 /**
  * Interface to add a new data source to an existing KB.
@@ -64,7 +102,7 @@ export interface ConfluenceDataSourceAssociationProps extends DataSourceAssociat
    * The Confluence host URL or instance URL.
    * @example https://example.atlassian.net
    */
-  readonly endpoint: string;
+  readonly confluenceUrl: string;
   /**
    * The AWS Secrets Manager secret that stores your authentication credentials
    * for your Confluence instance URL. Secret must start with "AmazonBedrock-".
@@ -100,6 +138,9 @@ export interface ConfluenceDataSourceProps extends ConfluenceDataSourceAssociati
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/confluence-data-source-connector.html
  */
 export class ConfluenceDataSource extends DataSourceNew {
+  // ------------------------------------------------------
+  // Common attributes for all new data sources
+  // ------------------------------------------------------
   /**
    * The unique identifier of the data source.
    * @example 'JHUEVXUZMU'
@@ -118,17 +159,23 @@ export class ConfluenceDataSource extends DataSourceNew {
    */
   public readonly knowledgeBase: KnowledgeBase;
   /**
+   * The KMS key to use to encrypt the data source.
+   */
+  public readonly kmsKey?: IKey;
+  // ------------------------------------------------------
+  // Unique to this class
+  // ------------------------------------------------------
+  /**
    * The Confluence host URL or instance URL.
    */
-  public readonly endpoint: string;
+  public readonly confluenceUrl: string;
   /**
    * The AWS Secrets Manager secret that stores your authentication credentials.
    */
   public readonly authSecret: ISecret;
-  /**
-   * The KMS key to use to encrypt the data source.
-   */
-  public readonly kmsKey?: IKey;
+  // ------------------------------------------------------
+  // Unique to this class
+  // ------------------------------------------------------
   /**
    * The Data Source cfn resource.
    */
@@ -137,26 +184,28 @@ export class ConfluenceDataSource extends DataSourceNew {
 
   constructor(scope: Construct, id: string, props: ConfluenceDataSourceProps) {
     super(scope, id);
-    // Assign attributes
+    // Assign common attributes
     this.knowledgeBase = props.knowledgeBase;
     this.dataSourceType = DataSourceType.CONFLUENCE;
-    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 'sfdc-datasource', { maxLength: 40, lower: true, separator: '-' });;
-    this.endpoint = props.endpoint;
-    this.authSecret = props.authSecret;
+    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 'confluence-ds', { maxLength: 40, lower: true, separator: '-' });
     this.kmsKey = props.kmsKey;
+    // Assign unique attributes
+    this.confluenceUrl = props.confluenceUrl;
+    this.authSecret = props.authSecret;
 
-    // L1 instantiation
+    // ------------------------------------------------------
+    // L1 Instantiation
+    // ------------------------------------------------------
     this.__resource = new CfnDataSource(this, 'DataSource', {
+      ...this.formatCfnCommonProps(props),
       knowledgeBaseId: this.knowledgeBase.knowledgeBaseId,
-      name: this.dataSourceName,
-      dataDeletionPolicy: props.dataDeletionPolicy ?? DataDeletionPolicy.DELETE,
       dataSourceConfiguration: {
         type: this.dataSourceType,
         confluenceConfiguration: {
           sourceConfiguration: {
             authType: props.authType ?? ConfluenceDataSourceAuthType.OAUTH2_CLIENT_CREDENTIALS,
             credentialsSecretArn: this.authSecret.secretArn,
-            hostUrl: this.endpoint,
+            hostUrl: this.confluenceUrl,
             hostType: 'SAAS',
           },
           crawlerConfiguration:
@@ -173,20 +222,10 @@ export class ConfluenceDataSource extends DataSourceNew {
               },
             }) : undefined,
         },
-      },
-      vectorIngestionConfiguration: (props.chunkingStrategy || props.parsingStrategy || props.customTransformation) ? {
-        chunkingConfiguration: props.chunkingStrategy?.configuration,
-        parsingConfiguration: props.parsingStrategy?.configuration,
-        customTransformationConfiguration: props.customTransformation?.configuration,
-      } : undefined,
-      serverSideEncryptionConfiguration: this.kmsKey ? {
-        kmsKeyArn: this.kmsKey.keyArn,
-      } : undefined,
-
+      }
     });
 
     this.dataSourceId = this.__resource.attrDataSourceId;
-
 
   }
 }

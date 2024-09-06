@@ -16,21 +16,8 @@ import { Template } from 'aws-cdk-lib/assertions';
 import { FoundationModel, FoundationModelIdentifier } from 'aws-cdk-lib/aws-bedrock';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { AwsSolutionsChecks } from 'cdk-nag';
-import * as bedrock from '../../../src/cdk-lib/bedrock';
+import * as bedrock from '../../../../src/cdk-lib/bedrock';
 
-
-// mock lambda.Code.fromDockerBuild()
-jest.mock('aws-cdk-lib/aws-lambda', () => {
-  const actualLambda = jest.requireActual('aws-cdk-lib/aws-lambda');
-  return {
-    ...actualLambda,
-    Code: {
-      ...actualLambda.Code,
-      fromDockerBuild: jest.fn(() => actualLambda.Code.fromInline('mockCode')),
-      fromAsset: jest.fn(() => actualLambda.Code.fromInline('mockCode')),
-    },
-  };
-});
 
 describe('S3 Data Source', () => {
   let stack: cdk.Stack;
@@ -43,7 +30,7 @@ describe('S3 Data Source', () => {
     stack = new cdk.Stack(app, 'TestStack');
     bucket = new s3.Bucket(stack, 'TestBucket');
     kb = new bedrock.KnowledgeBase(stack, 'KB', {
-      embeddingsModel: bedrock.BedrockFoundationModel.TITAN_EMBED_TEXT_V1,
+      embeddingsModel: bedrock.BedrockFoundationModel.TITAN_EMBED_TEXT_V2_1024,
     });
   });
 
@@ -56,7 +43,6 @@ describe('S3 Data Source', () => {
     });
 
     Template.fromStack(stack).hasResourceProperties('AWS::Bedrock::DataSource', {
-
       VectorIngestionConfiguration:
       {
         ChunkingConfiguration: {

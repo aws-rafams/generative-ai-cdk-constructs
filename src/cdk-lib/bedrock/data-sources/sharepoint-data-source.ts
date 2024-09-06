@@ -140,7 +140,7 @@ export class SharepointDataSource extends DataSourceNew {
     // Assign attributes
     this.knowledgeBase = props.knowledgeBase;
     this.dataSourceType = DataSourceType.SHAREPOINT;
-    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 'sfdc-datasource', { maxLength: 40, lower: true, separator: '-' });;
+    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 'sharepoint-ds', { maxLength: 40, lower: true, separator: '-' });;
     this.siteUrls = props.siteUrls;
     this.domain = props.domain;
     this.authSecret = props.authSecret;

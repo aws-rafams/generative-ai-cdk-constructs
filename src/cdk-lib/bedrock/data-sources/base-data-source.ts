@@ -21,40 +21,57 @@ import { CustomTransformation } from './custom-transformation';
 import { ParsingStategy } from './parsing';
 
 
+/**
+ * Specifies the policy for handling data when a data source resource is deleted.
+ * This policy affects the vector embeddings created from the data source.
+ */
 export enum DataDeletionPolicy {
   /**
-   * Deletes the data source and its associated resources.
+   * Deletes all vector embeddings derived from the data source upon deletion 
+   * of a data source resource.
    */
   DELETE = 'DELETE',
+
   /**
-   * Retains the data source and its associated resources.
+   * Retains all vector embeddings derived from the data source even after
+   * deletion of a data source resource.
    */
   RETAIN = 'RETAIN'
 }
 
+
+
+/**
+ * Represents the types of data sources that can be associated to an Knowledge Base.
+ */
 export enum DataSourceType {
   /**
-   * Connects to an Amazon S3 Bucket.
+   * Amazon S3 Bucket data source.
    */
   S3 = 'S3',
+
   /**
-   * Connects to a Confluence Cloud Instance.
+   * Confluence Cloud Instance data source.
    */
   CONFLUENCE = 'CONFLUENCE',
+
   /**
-   * Connects to a Salesforce instance.
+   * Salesforce instance data source.
    */
   SALESFORCE = 'SALESFORCE',
+
   /**
-   * Connects to a Microsoft SharePoint instance.
+   * Microsoft SharePoint instance data source.
    */
   SHAREPOINT = 'SHAREPOINT',
+
   /**
-   * Leverages a Web page crawler that extracts content from public web pages
-   * which you are authorized to crawl.
+   * Web Crawler data source.
+   * Extracts content from authorized public web pages using a crawler.
    */
   WEB_CRAWLER = 'WEB'
 }
+
 
 /**
  * Specifies interface for resources created with CDK or imported into CDK.
@@ -91,24 +108,28 @@ export interface DataSourceAssociationProps {
    * @default - A new name will be generated.
    */
   readonly dataSourceName?: string;
+
   /**
    * A description of the data source.
    *
    * @default - No description is provided.
    */
   readonly description?: string;
+
   /**
    * The KMS key to use to encrypt the data source.
    *
    * @default - Service owned and managed key.
    */
   readonly kmsKey?: kms.IKey;
+
   /**
    * The data deletion policy to apply to the data source.
    *
-   * @default DataDeletionPolicy.DELETE
+   * @default - Sets the data deletion policy to the default of the data source type.
    */
   readonly dataDeletionPolicy?: DataDeletionPolicy;
+
   /**
    * The chunking stategy to use for splitting your documents or content.
    * The chunks are then converted to embeddings and written to the vector
@@ -117,12 +138,14 @@ export interface DataSourceAssociationProps {
    * @default ChunkingStrategy.DEFAULT
    */
   readonly chunkingStrategy?: ChunkingStrategy;
+
   /**
    * The parsing strategy to use.
    *
    * @default - No Parsing Stategy is used.
    */
   readonly parsingStrategy?: ParsingStategy;
+
   /**
    * The custom transformation strategy to use.
    *
@@ -153,8 +176,30 @@ export abstract class DataSourceNew extends DataSourceBase {
    * The knowledge base associated with the data source.
    */
   public abstract readonly knowledgeBase: KnowledgeBase;
+  /**
+  * The KMS key to use to encrypt the data source.
+  */
+  public abstract readonly kmsKey?: kms.IKey;
 
-  // Common methods only for new data sources go here
+  // ------------------------------------------------------
+  // Common methods for ALL NEW data sources
+  // ------------------------------------------------------
+  public formatCfnCommonProps(props: DataSourceAssociationProps) {
+    return {
+      dataDeletionPolicy: props.dataDeletionPolicy,
+      description: props.description,
+      name: this.dataSourceName,
+      serverSideEncryptionConfiguration: props.kmsKey ? {
+        kmsKeyArn: props.kmsKey.keyArn,
+      } : undefined,
+      vectorIngestionConfiguration: (props.chunkingStrategy || props.parsingStrategy || props.customTransformation) ? {
+        chunkingConfiguration: props.chunkingStrategy?.configuration,
+        parsingConfiguration: props.parsingStrategy?.configuration,
+        customTransformationConfiguration: props.customTransformation?.configuration,
+      } : undefined,
+
+    }
+  }
 }
 
 

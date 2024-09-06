@@ -124,7 +124,7 @@ export class WebCrawlerDataSource extends DataSourceNew {
     // Assign attributes
     this.knowledgeBase = props.knowledgeBase;
     this.dataSourceType = DataSourceType.WEB_CRAWLER;
-    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 'crawler-datasource', { maxLength: 40, lower: true, separator: '-' });;
+    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 'crawler-ds', { maxLength: 40, lower: true, separator: '-' });;
     this.kmsKey = props.kmsKey;
     this.crawlingRate = props.crawlingRate ?? 300;
 

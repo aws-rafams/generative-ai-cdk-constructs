@@ -666,7 +666,7 @@ export class KnowledgeBase extends Construct {
     });
   }
   public addConfluenceDataSource(props: ConfluenceDataSourceAssociationProps): ConfluenceDataSource {
-    const url = new URL(props.endpoint);
+    const url = new URL(props.confluenceUrl);
     return new ConfluenceDataSource(this, `cf-${url.hostname.replace('.', '-')}`, {
       knowledgeBase: this, ...props,
     });

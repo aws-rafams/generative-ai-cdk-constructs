@@ -90,7 +90,7 @@ export class S3DataSource extends DataSourceNew {
     // Assign attributes
     this.knowledgeBase = props.knowledgeBase;
     this.dataSourceType = DataSourceType.S3;
-    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 's3-datasource', { maxLength: 40, lower: true, separator: '-' });;
+    this.dataSourceName = props.dataSourceName ?? generatePhysicalNameV2(this, 's3-ds', { maxLength: 40, lower: true, separator: '-' });;
     this.bucket = props.bucket;
     this.kmsKey = props.kmsKey;
 

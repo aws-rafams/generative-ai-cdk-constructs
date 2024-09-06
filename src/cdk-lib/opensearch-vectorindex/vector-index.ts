@@ -237,13 +237,12 @@ export class VectorIndex extends cdk.Resource {
     const vectorIndex = new cdk.CustomResource(this, 'VectorIndex', {
       serviceToken: crProvider.serviceToken,
       properties: {
-        Endpoint: `${props.collection.collectionId}.${
-          cdk.Stack.of(this).region
+        Endpoint: `${props.collection.collectionId}.${cdk.Stack.of(this).region
         }.aoss.amazonaws.com`,
         IndexName: props.indexName,
         VectorField: props.vectorField,
         Dimensions: props.vectorDimensions,
-        MetadataManagement: props.mappings.map((m) => {
+        MetadataManagement: props.mappings.map((m: MetadataManagementFieldProps) => {
           return {
             MappingField: m.mappingField,
             DataType: m.dataType,
