@@ -11,7 +11,6 @@
  *  and limitations under the License.
  */
 
-export * from './knowledge-base';
 export * from './agent';
 export * from './agent-alias';
 export * from './agent-action-group';
@@ -19,6 +18,8 @@ export * from './api-schema';
 export * from './guardrails/guardrail-filters';
 export * from './guardrails/guardrails';
 export * from './models';
+export * from './knowledge-bases/common';
+export * from './knowledge-bases/knowledge-base';
 export * from './prompts/prompt';
 export * from './prompts/prompt-version';
 export * from './data-sources/base-data-source';
