@@ -71,6 +71,7 @@ export class KendraKnowledgeBase extends KnowledgeBaseBase {
     // ------------------------------------------------------
     // Role
     // ------------------------------------------------------
+    let policyAddition: iam.AddToPrincipalPolicyResult | undefined;
     if (props.existingRole) {
       this.role = props.existingRole;
     } else {
@@ -91,7 +92,7 @@ export class KendraKnowledgeBase extends KnowledgeBaseBase {
           },
         }),
       });
-      this.role.addToPrincipalPolicy(
+      policyAddition = this.role.addToPrincipalPolicy(
         new iam.PolicyStatement({
           sid: 'AmazonBedrockKnowledgeBaseKendraIndexAccessStatement',
           actions: ['kendra:Retrieve', 'kendra:DescribeIndex'],
@@ -113,6 +114,8 @@ export class KendraKnowledgeBase extends KnowledgeBaseBase {
         },
       },
     });
+    // Ensure policy statement is added before creating KnowledgeBase
+    this._resource.node.addDependency(policyAddition?.policyDependable!);
 
     this.knowledgeBaseArn = this._resource.attrKnowledgeBaseArn;
     this.knowledgeBaseId = this._resource.attrKnowledgeBaseId;
