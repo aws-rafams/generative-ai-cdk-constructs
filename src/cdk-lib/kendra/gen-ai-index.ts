@@ -50,11 +50,13 @@ export namespace Kendra {
 export interface IKendraGenAiIndex extends cdk.IResource {
   /**
    * The Amazon Resource Name (ARN) of the index.
+   * @example 'arn:aws:kendra:us-east-1:123456789012:index/af04c7ea-22bc-46b7-a65e-6c21e604fc11'
    */
   readonly indexArn: string;
 
   /**
    * The identifier of the index.
+   * @example 'af04c7ea-22bc-46b7-a65e-6c21e604fc11'.
    */
   readonly indexId: string;
 
@@ -104,6 +106,7 @@ export interface KendraGenAiIndexProps {
 export interface KendraGenAiIndexAttributes {
   /**
    * The Id of the index.
+   * @example 'af04c7ea-22bc-46b7-a65e-6c21e604fc11'
    */
   readonly indexId: string;
   /**
@@ -152,7 +155,7 @@ export class KendraGenAiIndex extends KendraGenAiIndexBase {
       props.name ?? generatePhysicalNameV2(this, 'genai-index', { maxLength: 40, lower: true, separator: '-' });
 
     this.documentCapacityUnits = props.documentCapacityUnits ?? 0;
-    this.queryCapacityUnits = props.documentCapacityUnits ?? 0;
+    this.queryCapacityUnits = props.queryCapacityUnits ?? 0;
 
     // ------------------------------------------------------
     // Role Creation
@@ -162,6 +165,49 @@ export class KendraGenAiIndex extends KendraGenAiIndexBase {
       roleName: roleName,
       assumedBy: new iam.ServicePrincipal('kendra.amazonaws.com'),
     });
+    this.role.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: ['logs:DescribeLogGroups'],
+        resources: ['*'],
+      })
+    );
+    this.role.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: ['cloudwatch:PutMetricData'],
+        resources: ['*'],
+        conditions: {
+          StringEquals: {
+            'cloudwatch:namespace': 'AWS/Kendra',
+          },
+        },
+      })
+    );
+    this.role.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: ['logs:CreateLogGroup'],
+        resources: [
+          cdk.Stack.of(this).formatArn({
+            service: 'logs',
+            resource: 'log-group',
+            resourceName: '/aws/kendra/*',
+            arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
+          }),
+        ],
+      })
+    );
+    this.role.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: ['logs:DescribeLogStreams', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+        resources: [
+          cdk.Stack.of(this).formatArn({
+            service: 'logs',
+            resource: 'log-group',
+            resourceName: '/aws/kendra/*:log-stream:*',
+            arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
+          }),
+        ],
+      })
+    );
 
     // ------------------------------------------------------
     // L1 Instantiation
@@ -175,21 +221,6 @@ export class KendraGenAiIndex extends KendraGenAiIndexBase {
             kmsKeyId: props.kmsKey.keyId,
           }
         : undefined,
-      //   documentMetadataConfigurations: [
-      //     {
-      //       name: '_authors',
-      //       type: Kendra.IndexFieldTypes.STRING_LIST,
-      //       relevance: {
-      //         importance: 1,
-      //       },
-      //       search: {
-      //         facetable: false,
-      //         searchable: false,
-      //         displayable: false,
-      //         sortable: false,
-      //       },
-      //     },
-      //   ],
       capacityUnits: {
         storageCapacityUnits: this.documentCapacityUnits,
         queryCapacityUnits: this.queryCapacityUnits,

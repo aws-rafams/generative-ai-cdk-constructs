@@ -13,12 +13,12 @@
 import * as integ from '@aws-cdk/integ-tests-alpha';
 import * as cdk from 'aws-cdk-lib';
 import * as kms from 'aws-cdk-lib/aws-kms';
-import { DefaultPromptRouterIdentifier, Prompt, PromptRouter, PromptVariant } from '../../src/cdk-lib/bedrock';
 import { KendraGenAiIndex } from '../../src/cdk-lib/kendra';
+import { KendraKnowledgeBase } from '../../src/cdk-lib/bedrock';
 
 const app = new cdk.App();
 const region = 'us-east-1';
-const stack = new cdk.Stack(app, 'aws-cdk-bedrock-prompt-router-integ-test', {
+const stack = new cdk.Stack(app, 'aws-cdk-bedrock-prompt-kendra-integ-test', {
   env: {
     region,
   },
@@ -26,11 +26,16 @@ const stack = new cdk.Stack(app, 'aws-cdk-bedrock-prompt-router-integ-test', {
 
 const cmk = new kms.Key(stack, 'cmk', {});
 
-new KendraGenAiIndex(stack, 'index', {
+const index = new KendraGenAiIndex(stack, 'index', {
   name: 'kendra-index-cdk',
   kmsKey: cmk,
   documentCapacityUnits: 1,
   queryCapacityUnits: 1,
+});
+
+new KendraKnowledgeBase(stack, 'kb', {
+  name: 'kendra-kb-cdk',
+  kendraIndex: index,
 });
 
 new integ.IntegTest(app, 'ServiceTest', {
