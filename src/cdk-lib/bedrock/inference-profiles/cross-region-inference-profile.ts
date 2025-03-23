@@ -11,10 +11,10 @@
  *  and limitations under the License.
  */
 
-import { Arn, ArnFormat, Aws } from 'aws-cdk-lib';
-import { Grant, IGrantable } from 'aws-cdk-lib/aws-iam';
-import { BedrockFoundationModel, IInvokable } from '../models';
-import { IInferenceProfile, InferenceProfileType } from './common';
+import { Arn, ArnFormat, Aws } from "aws-cdk-lib";
+import { Grant, IGrantable } from "aws-cdk-lib/aws-iam";
+import { BedrockFoundationModel, IInvokable } from "../models";
+import { IInferenceProfile, InferenceProfileType } from "./common";
 
 export enum CrossRegionInferenceProfileRegion {
   /**
@@ -23,16 +23,18 @@ export enum CrossRegionInferenceProfileRegion {
    * - Frankfurt (`eu-central-1`)
    * - Ireland (`eu-west-1`)
    * - Paris (`eu-west-3`)
+   * - Stockholm (`eu-north-1`)
    */
-  EU = 'eu',
+  EU = "eu",
   /**
    * Cross-region Inference Identifier for the United States area.
    * According to the model chosen, this might include:
    * - N. Virginia (`us-east-1`)
    * - Oregon (`us-west-2`)
    * - Ohio (`us-east-2`)
+   * - N. California (`us-west-1`)
    */
-  US = 'us',
+  US = "us",
   /**
    * Cross-region Inference Identifier for the Asia-Pacific area.
    * According to the model chosen, this might include:
@@ -42,26 +44,28 @@ export enum CrossRegionInferenceProfileRegion {
    * - Singapore (`ap-southeast-1`)
    * - Sydney (`ap-southeast-2`)
    */
-  APAC = 'apac',
+  APAC = "apac",
 }
 
 export const REGION_TO_GEO_AREA: { [key: string]: CrossRegionInferenceProfileRegion } = {
   // US Regions
-  'us-east-1': CrossRegionInferenceProfileRegion.US, // N. Virginia
-  'us-east-2': CrossRegionInferenceProfileRegion.US, // Ohio
-  'us-west-2': CrossRegionInferenceProfileRegion.US, // Oregon
+  "us-east-1": CrossRegionInferenceProfileRegion.US, // N. Virginia
+  "us-east-2": CrossRegionInferenceProfileRegion.US, // Ohio
+  "us-west-1": CrossRegionInferenceProfileRegion.US, // N. California
+  "us-west-2": CrossRegionInferenceProfileRegion.US, // Oregon
 
   // EU Regions
-  'eu-central-1': CrossRegionInferenceProfileRegion.EU, // Frankfurt
-  'eu-west-1': CrossRegionInferenceProfileRegion.EU, // Ireland
-  'eu-west-3': CrossRegionInferenceProfileRegion.EU, // Paris
+  "eu-central-1": CrossRegionInferenceProfileRegion.EU, // Frankfurt
+  "eu-west-1": CrossRegionInferenceProfileRegion.EU, // Ireland
+  "eu-west-3": CrossRegionInferenceProfileRegion.EU, // Paris
+  "eu-north-1": CrossRegionInferenceProfileRegion.EU, // Stockholm
 
   // APAC Regions
-  'ap-northeast-1': CrossRegionInferenceProfileRegion.APAC, // Tokyo
-  'ap-northeast-2': CrossRegionInferenceProfileRegion.APAC, // Seoul
-  'ap-south-1': CrossRegionInferenceProfileRegion.APAC, // Mumbai
-  'ap-southeast-1': CrossRegionInferenceProfileRegion.APAC, // Singapore
-  'ap-southeast-2': CrossRegionInferenceProfileRegion.APAC, // Sydney
+  "ap-northeast-1": CrossRegionInferenceProfileRegion.APAC, // Tokyo
+  "ap-northeast-2": CrossRegionInferenceProfileRegion.APAC, // Seoul
+  "ap-south-1": CrossRegionInferenceProfileRegion.APAC, // Mumbai
+  "ap-southeast-1": CrossRegionInferenceProfileRegion.APAC, // Singapore
+  "ap-southeast-2": CrossRegionInferenceProfileRegion.APAC, // Sydney
 };
 
 /******************************************************************************
@@ -122,10 +126,10 @@ export class CrossRegionInferenceProfile implements IInvokable, IInferenceProfil
     this.inferenceProfileId = `${props.geoRegion}.${props.model.modelId}`;
     this.inferenceProfileArn = Arn.format({
       partition: Aws.PARTITION,
-      service: 'bedrock',
+      service: "bedrock",
       account: Aws.ACCOUNT_ID,
       region: Aws.REGION,
-      resource: 'inference-profile',
+      resource: "inference-profile",
       resourceName: this.inferenceProfileId,
       arnFormat: ArnFormat.SLASH_RESOURCE_NAME,
     });
@@ -151,7 +155,7 @@ export class CrossRegionInferenceProfile implements IInvokable, IInferenceProfil
   grantProfileUsage(grantee: IGrantable): Grant {
     const grant = Grant.addToPrincipal({
       grantee: grantee,
-      actions: ['bedrock:GetInferenceProfile', 'bedrock:InvokeModel*'],
+      actions: ["bedrock:GetInferenceProfile", "bedrock:InvokeModel*"],
       resourceArns: [this.inferenceProfileArn],
     });
     return grant;

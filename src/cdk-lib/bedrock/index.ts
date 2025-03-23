@@ -48,7 +48,12 @@ export * from './models';
 export * from './inference-profiles/common';
 export * from './inference-profiles/default-prompt-routers';
 export * from './inference-profiles/cross-region-inference-profile';
-export * from './inference-profiles/application-inference-profile';
+
+//===================================
+// Data Automation
+//===================================
+export * from './data-automation/blueprint';
+export * from './data-automation/project';
 
 //===================================
 // Knowledge Bases
